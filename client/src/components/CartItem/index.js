@@ -2,12 +2,13 @@ import React from 'react';
 import { useStoreContext } from '../../utils/GlobalState';
 import { REMOVE_FROM_CART, UPDATE_CART_QUANTITY } from '../../utils/actions';
 import { idbPromise } from "../../utils/helpers";
+import { connect } from 'react-redux';
 
-const CartItem = ({ item }) => {
-    const [, dispatch] = useStoreContext();
-
+const CartItem = (props) => {
+    //const [, dispatch] = useStoreContext();
+    const { item } = props;
     const removeFromCart = item => {
-        dispatch({
+      props.dispatch({
           type: REMOVE_FROM_CART,
           _id: item._id
         });
@@ -18,14 +19,14 @@ const CartItem = ({ item }) => {
         const value = e.target.value;
         
         if (value === '0') {
-            dispatch({
+          props.dispatch({
               type: REMOVE_FROM_CART,
               _id: item._id
             });
           
             idbPromise('cart', 'delete', { ...item });
         } else {
-            dispatch({
+          props.dispatch({
               type: UPDATE_CART_QUANTITY,
               _id: item._id,
               purchaseQuantity: parseInt(value)
@@ -66,4 +67,8 @@ const CartItem = ({ item }) => {
   );
 }
 
-export default CartItem;
+const mapStateToProps = (state) => {
+  return { state }
+}
+
+export default connect(mapStateToProps)(CartItem);

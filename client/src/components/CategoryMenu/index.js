@@ -3,21 +3,22 @@ import { UPDATE_CATEGORIES, UPDATE_CURRENT_CATEGORY } from '../../utils/actions'
 import { useQuery } from '@apollo/react-hooks';
 import { QUERY_CATEGORIES } from "../../utils/queries";
 import { idbPromise } from '../../utils/helpers';
-import { useStoreContext } from "../../utils/GlobalState";
+// import { useStoreContext } from "../../utils/GlobalState";
+import { connect } from 'react-redux';
 
-function CategoryMenu() {
+function CategoryMenu(props) {
   // const { data: categoryData } = useQuery(QUERY_CATEGORIES);
   // const categories = categoryData?.categories || [];
+  console.log('MyProps: ', props);
+  //const state = props.state;
 
-  const [state, dispatch] = useStoreContext();
-
-  const { categories } = state;
+  const { categories } = props.categories;
 
   const { loading, data: categoryData } = useQuery(QUERY_CATEGORIES);
 
   useEffect(() => {
     if (categoryData) {
-      dispatch({
+      props.dispatch({
         type: UPDATE_CATEGORIES,
         categories: categoryData.categories
       });
@@ -26,16 +27,16 @@ function CategoryMenu() {
       });
     } else if (!loading) {
       idbPromise('categories', 'get').then(categories => {
-        dispatch({
+        props.dispatch({
           type: UPDATE_CATEGORIES,
           categories: categories
         });
       });
     }
-  }, [categoryData, loading, dispatch]);
+  }, [categoryData, loading, props.dispatch]);
 
   const handleClick = id => {
-    dispatch({
+    props.dispatch({
       type: UPDATE_CURRENT_CATEGORY,
       currentCategory: id
     });
@@ -44,7 +45,7 @@ function CategoryMenu() {
   return (
     <div>
       <h2>Choose a Category:</h2>
-      {categories.map(item => (
+      {props.categories.map(item => (
         <button
           key={item._id}
           onClick={() => {
@@ -58,4 +59,24 @@ function CategoryMenu() {
   );
 }
 
-export default CategoryMenu;
+const mapStateToProps = (state) => {
+  const { categories } = state;
+  return { categories }
+}
+
+// const mapDispatchToProps = (dispatch) => {
+//   return {
+//     updateCategories: dispatch({
+//       type: UPDATE_CATEGORIES,
+//       categories: categoryData.categories
+//     }),
+//     handleClick: dispatch({
+//       type: UPDATE_CURRENT_CATEGORY,
+//       currentCategory: id
+//     })
+//   }
+// }
+
+
+
+export default connect(mapStateToProps)(CategoryMenu);
